@@ -74,7 +74,7 @@
 				return;
 			}
 
-			var j, y, x, num, numUsed, tries;
+			var y, x, num, numUsed, tries;
 
 			running = true;
 			progress = 0;
