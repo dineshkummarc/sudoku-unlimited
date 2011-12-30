@@ -47,6 +47,19 @@
 		return canvas.getContext('2d');
 	}
 
+	function createArray(length, map) {
+		var result = [], j;
+		for (j = 0; j < length; j += 1) {
+			if (typeof map === 'function') {
+				result.push(map(j));
+			} else {
+				result.push(null);
+			}
+		}
+
+		return result;
+	}
+
 	var generator = new Worker('generator.js');
 	generator.addEventListener('message', function (event) {
 		var data = event.data;
@@ -73,17 +86,93 @@
 	}
 
 	function init() {
+		game.init(context);
 		lastUpdate = Date.now();
 		update(lastUpdate);
 	}
 
 	game = (function () {
+		var bgGradient,
+			grid,
+			showErrors = false,
+			gridBounds = { x: 10, y: 10, width: 64 * 9, height: 64 * 9 };
+
+		function init(ctx) {
+			bgGradient = ctx.createLinearGradient(0, 0, width, height);
+			bgGradient.addColorStop(0, '#fff');
+			bgGradient.addColorStop(.1, '#b6d3f7');
+			bgGradient.addColorStop(.7, '#b6d3f7');
+			bgGradient.addColorStop(1, '#fff');
+
+			grid = createArray(9 * 9, function () {
+				return ({
+					error: false,
+					editable: false,
+					value: 0
+				});
+			});
+		}
+
 		function update(delta) {
 		}
 
+		function renderBoard(ctx) {
+			var x, y, val;
+
+			// draw grid squares
+			for (y = 0;y < 9;y++) {
+				for (x = 0;x < 9;x++) {
+					if (showErrors && grid[y*9+x].error) {
+						ctx.fillStyle = '#f00';
+					} else if (grid[y*9+x].editable) {
+						ctx.fillStyle = '#fff';
+					} else {
+						ctx.fillStyle = 'rgb(255, 255, 255, 0.66';
+					}
+
+					ctx.fillRect(64 * x + gridBounds.x, 64 * y + gridBounds.y, 64, 64);
+				}
+			}
+			
+			// draw grid outline
+			ctx.lineWidth = 2.0;
+			ctx.strokeStyle = '#aab';
+			ctx.beginPath();
+			for (j = 0;j < 9;j++) {
+				ctx.moveTo(64 * j + gridBounds.x, gridBounds.y);
+				ctx.lineTo(64 * j + gridBounds.x, 64 * 9 + gridBounds.y);
+
+				ctx.moveTo(gridBounds.x, 64 * j + gridBounds.y);
+				ctx.lineTo(64 * 9 + gridBounds.x, 64 * j + gridBounds.y);
+			}
+			ctx.stroke();
+
+			// draw grid thick lines
+			ctx.lineWidth = 4.0;
+			ctx.strokeStyle = '#000';
+			ctx.beginPath();
+			for (j = 0;j < 9;j++) {
+				if (j > 0 && j%3 === 0) {
+					ctx.moveTo(64 * j + gridBounds.x, gridBounds.y);
+					ctx.lineTo(64 * j + gridBounds.x, 64 * 9 + gridBounds.y);
+
+					ctx.moveTo(gridBounds.x, 64 * j + gridBounds.y);
+					ctx.lineTo(64 * 9 + gridBounds.x, 64 * j + gridBounds.y);
+				}
+			}
+			ctx.stroke();
+
+			// draw grid borders
+			ctx.lineWidth = 2.0;
+			ctx.strokeStyle = '#000';
+			ctx.strokeRect(gridBounds.x, gridBounds.y, 9 * 64, 9 * 64);
+		}
+
 		function render(ctx) {
-			ctx.fillStyle = '#b6d3f7';
+			ctx.fillStyle = bgGradient;
 			ctx.fillRect(0, 0, width, height);
+
+			renderBoard(ctx);
 		}
 
 		return ({
