@@ -1,15 +1,11 @@
 (function (self) {
-	var generator;
+	var generator, postMessage = self.postMessage;
 
 	self.onmessage = function (event) {
 		if (event.data === 'createGrid') {
 			generator.createGrid();
 		}
 	};
-
-	function postMessage(message) {
-		return self.postMessage(JSON.stringify(message));
-	}
 
 	function rand(min, max) {
 		return min + Math.floor(Math.random() * (max - min));

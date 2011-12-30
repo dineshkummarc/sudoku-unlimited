@@ -2,7 +2,7 @@
 	var generator = new Worker('generator.js');
 	window.foo = generator;
 	generator.addEventListener('message', function (event) {
-		var data = JSON.parse(event.data);
+		var data = event.data;
 		console.log(data);
 
 		if (data.complete) {
