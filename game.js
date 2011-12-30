@@ -2,6 +2,11 @@
 	var generator = new Worker('generator.js');
 	window.foo = generator;
 	generator.addEventListener('message', function (event) {
-		console.log(event.data);
+		var data = JSON.parse(event.data);
+		console.log(data);
+
+		if (data.complete) {
+			console.log(data.grid.join('').match(/\d{9}/g).join('\n'));
+		}
 	}, false);
 }());
