@@ -1,4 +1,4 @@
-(function () {
+(function (window, document) {
 	var generator, game, images, lastUpdate, context, width, height;
 
 	repaint = window.requestAnimationFrame ||
@@ -88,10 +88,12 @@
 	}
 
 	game = (function () {
-		var grid, showErrors;
+		var grid, gridLines, showErrors;
+
 
 		function init(ctx) {
 			showErrors = false;
+			gridLines = createGridLines();
 
 			grid = createArray(9 * 9, function () {
 				return ({
@@ -105,24 +107,12 @@
 		function update(delta) {
 		}
 
-		function renderBoard(ctx) {
-			var x, y, val;
+		function createGridLines() {
+			var ctx, result = document.createElement('canvas');
+			result.width = width;
+			result.height = height;
+			ctx = result.getContext('2d');
 
-			// draw grid squares
-			for (y = 0;y < 9;y++) {
-				for (x = 0;x < 9;x++) {
-					if (showErrors && grid[y*9+x].error) {
-						ctx.fillStyle = '#f00';
-					} else if (grid[y*9+x].editable) {
-						ctx.fillStyle = '#fff';
-					} else {
-						ctx.fillStyle = 'rgba(255, 255, 255, 0)';
-					}
-
-					ctx.fillRect(64 * x, 64 * y, 64, 64);
-				}
-			}
-			
 			// draw grid outline
 			ctx.lineWidth = 2.0;
 			ctx.strokeStyle = '#aab';
@@ -155,6 +145,30 @@
 			ctx.lineWidth = 2.0;
 			ctx.strokeStyle = '#000';
 			ctx.strokeRect(1, 1, 9 * 64, 9 * 64);
+
+			return result;
+		}
+
+		function renderBoard(ctx) {
+			var x, y;
+
+			// draw grid squares
+			for (y = 0;y < 9;y++) {
+				for (x = 0;x < 9;x++) {
+					if (showErrors && grid[y*9+x].error) {
+						ctx.fillStyle = '#f00';
+					} else if (grid[y*9+x].editable) {
+						ctx.fillStyle = '#fff';
+					} else {
+						ctx.fillStyle = 'rgba(255, 255, 255, 0)';
+					}
+
+					ctx.fillRect(64 * x, 64 * y, 64, 64);
+				}
+			}
+
+			// draw grid outline
+			ctx.drawImage(gridLines, 0, 0);
 		}
 
 		function render(ctx) {
@@ -205,4 +219,4 @@
 			image.src = 'images/' + file + '.png';
 		});
 	}(init));
-}());
+}(this, this.document));
