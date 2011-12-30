@@ -3,17 +3,26 @@
 <head>
 <title>Sudoku Unlimited</title>
 <style type="text/css">
-canvas {
-	cursor: none;
-	outline: 0;
+#container {
 	width: 800px;
 	height: 600px;
 	display: block;
 	margin: 0 auto;
+	background-color: #b6d3f7;
+	background-image: -webkit-linear-gradient(315deg, #fff, #b6d3f7 10%, #b6d3f7 70%, #fff);
+	background-image: -moz-linear-gradient(315deg, #fff, #b6d3f7 10%, #b6d3f7 70%, #fff);
+}
+canvas {
+	margin: 10px;
+	cursor: none;
+	outline: 0;
 }
 </style>
 </head>
 <body>
+<div id="container">
+<canvas id="game"></canvas>
+</div>
 <script type="text/javascript" src="game.js"></script>
 </body>
 </html>

@@ -11,38 +11,34 @@
 			}, 20);
 		};
 
-	function createCanvas(width, height, node) {
-		var canvas = document.createElement('canvas');
+	function initCanvas(canvas, width, height) {
 		canvas.width = width;
 		canvas.height = height;
 
-		if (node) {
-			node.appendChild(canvas);
-			canvas.tabIndex = 0;
-			canvas.focus();
-			canvas.addEventListener('keydown', function (e) {
-				if (game.captureKey(e.keyCode)) {
-					game.keyPressed(e.keyCode);
-					e.preventDefault();
-					return false;
-				}
-			}, false);
-			canvas.addEventListener('keyup', function (e) {
-				if (game.captureKey(e.keyCode)) {
-					game.keyReleased(e.keyCode);
-					e.preventDefault();
-					return false;
-				}
-			}, false);
+		canvas.tabIndex = 0;
+		canvas.focus();
+		canvas.addEventListener('keydown', function (e) {
+			if (game.captureKey(e.keyCode)) {
+				game.keyPressed(e.keyCode);
+				e.preventDefault();
+				return false;
+			}
+		}, false);
+		canvas.addEventListener('keyup', function (e) {
+			if (game.captureKey(e.keyCode)) {
+				game.keyReleased(e.keyCode);
+				e.preventDefault();
+				return false;
+			}
+		}, false);
 
-			['DOMMouseScroll', 'mousewheel'].forEach(function (event) {
-				canvas.addEventListener(event, function (e) {
-					game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
-					e.preventDefault();
-					return false;
-				});
+		['DOMMouseScroll', 'mousewheel'].forEach(function (event) {
+			canvas.addEventListener(event, function (e) {
+				game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
+				e.preventDefault();
+				return false;
 			});
-		}
+		});
 
 		return canvas.getContext('2d');
 	}
@@ -70,9 +66,9 @@
 		}
 	}, false);
 
-	width = 800;
-	height = 600;
-	context = createCanvas(width, height, document.body);
+	width = 578;
+	height = 578;
+	context = initCanvas(document.getElementById('game'), width, height);
 
 	function update(time, force) {
 		repaint(update);
@@ -92,17 +88,10 @@
 	}
 
 	game = (function () {
-		var bgGradient,
-			grid,
-			showErrors = false,
-			gridBounds = { x: 10, y: 10, width: 64 * 9, height: 64 * 9 };
+		var grid, showErrors;
 
 		function init(ctx) {
-			bgGradient = ctx.createLinearGradient(0, 0, width, height);
-			bgGradient.addColorStop(0, '#fff');
-			bgGradient.addColorStop(.1, '#b6d3f7');
-			bgGradient.addColorStop(.7, '#b6d3f7');
-			bgGradient.addColorStop(1, '#fff');
+			showErrors = false;
 
 			grid = createArray(9 * 9, function () {
 				return ({
@@ -127,10 +116,10 @@
 					} else if (grid[y*9+x].editable) {
 						ctx.fillStyle = '#fff';
 					} else {
-						ctx.fillStyle = 'rgb(255, 255, 255, 0.66';
+						ctx.fillStyle = 'rgba(255, 255, 255, 0)';
 					}
 
-					ctx.fillRect(64 * x + gridBounds.x, 64 * y + gridBounds.y, 64, 64);
+					ctx.fillRect(64 * x, 64 * y, 64, 64);
 				}
 			}
 			
@@ -139,11 +128,11 @@
 			ctx.strokeStyle = '#aab';
 			ctx.beginPath();
 			for (j = 0;j < 9;j++) {
-				ctx.moveTo(64 * j + gridBounds.x, gridBounds.y);
-				ctx.lineTo(64 * j + gridBounds.x, 64 * 9 + gridBounds.y);
+				ctx.moveTo(64 * j, 0);
+				ctx.lineTo(64 * j, 64 * 9);
 
-				ctx.moveTo(gridBounds.x, 64 * j + gridBounds.y);
-				ctx.lineTo(64 * 9 + gridBounds.x, 64 * j + gridBounds.y);
+				ctx.moveTo(0, 64 * j);
+				ctx.lineTo(64 * 9, 64 * j);
 			}
 			ctx.stroke();
 
@@ -153,11 +142,11 @@
 			ctx.beginPath();
 			for (j = 0;j < 9;j++) {
 				if (j > 0 && j%3 === 0) {
-					ctx.moveTo(64 * j + gridBounds.x, gridBounds.y);
-					ctx.lineTo(64 * j + gridBounds.x, 64 * 9 + gridBounds.y);
+					ctx.moveTo(64 * j, 0);
+					ctx.lineTo(64 * j, 64 * 9);
 
-					ctx.moveTo(gridBounds.x, 64 * j + gridBounds.y);
-					ctx.lineTo(64 * 9 + gridBounds.x, 64 * j + gridBounds.y);
+					ctx.moveTo(0, 64 * j);
+					ctx.lineTo(64 * 9, 64 * j);
 				}
 			}
 			ctx.stroke();
@@ -165,13 +154,10 @@
 			// draw grid borders
 			ctx.lineWidth = 2.0;
 			ctx.strokeStyle = '#000';
-			ctx.strokeRect(gridBounds.x, gridBounds.y, 9 * 64, 9 * 64);
+			ctx.strokeRect(1, 1, 9 * 64, 9 * 64);
 		}
 
 		function render(ctx) {
-			ctx.fillStyle = bgGradient;
-			ctx.fillRect(0, 0, width, height);
-
 			renderBoard(ctx);
 		}
 
