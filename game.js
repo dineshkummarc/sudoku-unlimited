@@ -1,5 +1,15 @@
 (function () {
-	var generator, game, images, context;
+	var generator, game, images, lastUpdate, context, width, height;
+
+	repaint = window.requestAnimationFrame ||
+		window.webkitRequestAnimationFrame ||
+		window.mozRequestAnimationFrame ||
+		window.oRequestAnimationFrame ||
+		function (callback) {
+			window.setTimeout(function () {
+				callback(Date.now());
+			}, 20);
+		};
 
 	function createCanvas(width, height, node) {
 		var canvas = document.createElement('canvas');
@@ -47,10 +57,33 @@
 		}
 	}, false);
 
-	context = createCanvas(800, 600, document.body);
+	width = 800;
+	height = 600;
+	context = createCanvas(width, height, document.body);
+
+	function update(time, force) {
+		repaint(update);
+		var delta = time - lastUpdate;
+		if (delta >= 16 || force) { // Cap at 60 FPS
+			lastUpdate = time;
+
+			game.update(delta);
+			game.render(context);
+		}
+	}
+
+	function init() {
+		lastUpdate = Date.now();
+		update(lastUpdate);
+	}
 
 	game = (function () {
-		function init() {
+		function update(delta) {
+		}
+
+		function render(ctx) {
+			ctx.fillStyle = '#b6d3f7';
+			ctx.fillRect(0, 0, width, height);
 		}
 
 		return ({
@@ -62,7 +95,9 @@
 			mouseWheel: function (delta) {
 				console.log(delta);
 			},
-			init: init
+			init: init,
+			update: update,
+			render: render
 
 		});
 	}());
@@ -94,5 +129,5 @@
 
 			image.src = 'images/' + file + '.png';
 		});
-	}(game.init));
+	}(init));
 }());
