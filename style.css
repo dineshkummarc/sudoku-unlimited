@@ -1,3 +1,21 @@
+body {
+	font: 22px calibri, helvetica, sans, serif;
+}
+
+#controls {
+	width: 800px;
+	margin: 0 auto;
+	clear: both;
+}
+
+h3, ul {
+	margin: 0;
+}
+
+ul {
+	list-style-type: circle;
+}
+
 #container {
 	width: 800px;
 	height: 600px;
