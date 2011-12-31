@@ -62,7 +62,7 @@
 		menu.addEventListener('click', function (e) {
 			var target = e.target;
 			if (/button/i.test(target.tagName) && target.id && typeof game[target.id] === 'function') {
-				game[target.id].apply(game, [e]);
+				game[target.id].apply(target, [e]);
 				repaint(update);
 
 				e.preventDefault();
@@ -318,6 +318,7 @@
 				var cell = Math.floor(y / 64) * 9 + Math.floor(x / 64);
 				if (grid[cell] && grid[cell].editable) {
 					grid[cell].value = mouse.state;
+					grid[cell].error = grid[cell].value !== gridSource[cell].value && !!grid[cell].value;
 				}
 			},
 
@@ -338,6 +339,11 @@
 						value: !cell.editable && cell.value || 0
 					});
 				});
+			},
+
+			toggleErrors: function () {
+				showErrors = !showErrors;
+				this.innerHTML = (showErrors && 'Hide' || 'Show') + ' Errors';
 			},
 
 			showSolution: function () {
