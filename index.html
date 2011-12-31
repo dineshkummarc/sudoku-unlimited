@@ -2,17 +2,23 @@
 <html>
   <head>
     <title>Sudoku Unlimited</title>
-    <link rel="stylesheet" type="text/css" href="style.css"></link>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
   </head>
   <body>
     <div id="container">
       <canvas id="game"></canvas>
       <div id="menu">
-        <img src="images/logo.png"/>
+        <img src="images/logo.png" alt="Sudoku Unlimited"/>
         <button id="newPuzzle">New Puzzle</button>
         <button id="restart">Restart</button>
         <button id="toggleErrors">Show Errors</button>
         <button id="showSolution">Show Solution</button>
+      </div>
+      <div id="overlay">
+        <img class="generating" src="images/generating.png" alt="Generating"/>
+          <div class="progress">
+            <div id="progressBar"></div>
+          </div>
       </div>
     </div>
     <script type="text/javascript" src="game.js"></script>

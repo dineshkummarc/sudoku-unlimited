@@ -10,6 +10,41 @@
 	background-image: -o-linear-gradient(315deg, #fff, #b6d3f7 10%, #b6d3f7 50%, #fff);
 }
 
+#overlay {
+	width: 800px;
+	height: 600px;
+	position: relative;
+	top: 0px;
+	background: rgba(255, 255, 255, .5);
+	display: none;
+	opacity: 0;
+	-webkit-transition: opacity .25s linear;
+	-moz-transition: opacity .25s linear;
+	-o-transition: opacity .25s linear;
+}
+
+#overlay img.generating {
+	position: absolute;
+	left: 185px;
+	top: 245px;
+}
+
+#overlay .progress {
+	position: absolute;
+	left: 192px;
+	top: 325px;
+	display: block;
+	width: 400px;
+	height: 24px;
+	border: 4px #000 solid;
+	background: #fff;
+}
+#overlay .progress > div {
+	width: 0%;
+	background: #0c0;
+	height: 24px;
+}
+
 #menu {
 	height: 600px;
 	width: 198px;

@@ -50,6 +50,8 @@
 			var target = e.target;
 			if (/button/i.test(target.tagName) && target.id && typeof game[target.id] === 'function') {
 				game[target.id].apply(game, [e]);
+				e.preventDefault();
+				return false;
 			}
 		});
 	}
@@ -95,11 +97,13 @@
 		var grid, gridSource, gridLines, showErrors, generator;
 
 		generator = new Worker('generator.js');
+		generator.overlay = document.getElementById('overlay');
+		generator.progressBar = document.getElementById('progressBar');
 		generator.running = false;
 		generator.addEventListener('message', function (event) {
 			var data = event.data;
+			generator.progressBar.style.width = data.progress * 100 + '%';
 			if (data.complete) {
-				generator.running = false;
 				grid = gridSource = data.grid.map(function (cell) {
 					return ({
 						error: false,
@@ -107,6 +111,12 @@
 						value: cell
 					});
 				});
+
+				generator.overlay.style.opacity = 0;
+				window.setTimeout(function () {
+					generator.overlay.style.display = 'none';
+					generator.running = false;
+				}, 250);
 			}
 		}, false);
 
@@ -192,6 +202,7 @@
 
 		function render(ctx) {
 			var val;
+			ctx.clearRect(0, 0, width, height);
 
 			// draw numbers
 			if (grid != null) {
@@ -199,7 +210,6 @@
 					for (x = 0;x < 9;x++) {
 						val = grid[y * 9 + x].value;
 						if (val > 0) {
-							ctx.clearRect(x * 64, y * 64, 64, 64);
 							ctx.drawImage(images[val], x * 64, y * 64);
 						}
 					}
@@ -220,6 +230,8 @@
 			},
 			newPuzzle: function () {
 				if (!generator.running) {
+					generator.overlay.style.display = 'block';
+					generator.overlay.style.opacity = 1;
 					generator.running = true;
 					generator.postMessage('createGrid');
 				}
