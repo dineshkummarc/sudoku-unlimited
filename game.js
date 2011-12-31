@@ -1,5 +1,5 @@
 (function (window, document) {
-	var game, images, lastUpdate, overlay, progressBar, context, width, height;
+	var game, images, lastUpdate, overlay, progressBar, update, context, width, height;
 
 	function initCanvas(canvas, width, height) {
 		canvas.width = width;
@@ -87,7 +87,7 @@
 
 	context = initCanvas(document.getElementById('game'), width, height);
 
-	function update() {
+	update = function () {
 		var delta, time = Date.now();
 		delta = time - lastUpdate;
 		if (delta >= 16) { // Cap at 60 FPS
@@ -95,7 +95,7 @@
 
 			game.render(context);
 		}
-	}
+	};
 
 	function init() {
 		game.init(context);
@@ -104,7 +104,7 @@
 	}
 
 	game = (function () {
-		var grid, gridSource, gridLines, showErrors, generator, mouse, keyMap;
+		var grid, gridSource, gridLines, showErrors, generator, mouse, keyMap, randomizeGrid;
 
 		keyMap = {
 			46: 0, 48: 0, 96: 0,
@@ -121,7 +121,8 @@
 			40: 'down'
 		};
 
-		generator = new Worker('generator.js');
+		mouse = { x: -1, y : -1, state: 0 };
+		generator = new window.Worker('generator.js');
 		generator.running = false;
 		generator.addEventListener('message', function (event) {
 			var data = event.data;
@@ -146,6 +147,91 @@
 				}, 250);
 			}
 		}, false);
+
+		function createGridLines() {
+			var j, ctx, result = document.createElement('canvas');
+			result.width = width;
+			result.height = height;
+			ctx = result.getContext('2d');
+
+			// draw grid outline
+			ctx.lineWidth = 2.0;
+			ctx.strokeStyle = '#aab';
+			ctx.beginPath();
+			for (j = 0; j < 9; j += 1) {
+				ctx.moveTo(64 * j, 0);
+				ctx.lineTo(64 * j, 64 * 9);
+
+				ctx.moveTo(0, 64 * j);
+				ctx.lineTo(64 * 9, 64 * j);
+			}
+			ctx.stroke();
+
+			// draw grid thick lines
+			ctx.lineWidth = 4.0;
+			ctx.strokeStyle = '#000';
+			ctx.beginPath();
+			for (j = 0; j < 9; j += 1) {
+				if (j > 0 && j % 3 === 0) {
+					ctx.moveTo(64 * j, 0);
+					ctx.lineTo(64 * j, 64 * 9);
+
+					ctx.moveTo(0, 64 * j);
+					ctx.lineTo(64 * 9, 64 * j);
+				}
+			}
+			ctx.stroke();
+
+			// draw grid borders
+			ctx.lineWidth = 2.0;
+			ctx.strokeStyle = '#000';
+			ctx.strokeRect(1, 1, 9 * 64, 9 * 64);
+
+			return result;
+		}
+
+		function renderBoard(ctx) {
+			var x, y;
+
+			// draw grid squares
+			for (y = 0; y < 9; y += 1) {
+				for (x = 0; x < 9; x += 1) {
+					if (showErrors && grid[y * 9 + x].error) {
+						ctx.fillStyle = '#f00';
+					} else if (grid[y * 9 + x].editable) {
+						ctx.fillStyle = '#fff';
+					} else {
+						ctx.fillStyle = 'rgba(255, 255, 255, 0)';
+					}
+
+					ctx.fillRect(64 * x, 64 * y, 64, 64);
+				}
+			}
+
+			// draw grid outline
+			ctx.drawImage(gridLines, 0, 0);
+		}
+
+		function render(ctx) {
+			var val, x, y;
+			ctx.clearRect(0, 0, width, height);
+
+			renderBoard(ctx);
+
+			// draw numbers
+			for (y = 0; y < 9; y += 1) {
+				for (x = 0; x < 9; x += 1) {
+					val = grid[y * 9 + x].value;
+					if (val > 0) {
+						ctx.drawImage(images[val], x * 64, y * 64);
+					}
+				}
+			}
+
+			if (mouse.x >= 0 && mouse.y >= 0) {
+				ctx.drawImage(images[mouse.state], mouse.x - 32, mouse.y - 32);
+			}
+		}
 
 		function init(ctx) {
 			showErrors = false;
@@ -180,105 +266,22 @@
 			});
 		}
 
-		function randomizeGrid(grid) {
-			var result = copyGrid(grid);
-			var j,n,r = rand(30,50);
-			for (j = 0;j < r;j++) {
+		randomizeGrid = function (grid) {
+			var j, n, r, result;
+
+			result = copyGrid(grid);
+			r = rand(30, 50);
+			for (j = 0; j < r; j += 1) {
 				do {
-					n = rand(0,result.length-1);
-				}
-				while (result[n].editable);
+					n = rand(0, result.length - 1);
+				} while (result[n].editable);
+
 				result[n].value = 0;
 				result[n].editable = true;
 			}
 
 			return result;
-		}
-
-		function createGridLines() {
-			var ctx, result = document.createElement('canvas');
-			result.width = width;
-			result.height = height;
-			ctx = result.getContext('2d');
-
-			// draw grid outline
-			ctx.lineWidth = 2.0;
-			ctx.strokeStyle = '#aab';
-			ctx.beginPath();
-			for (j = 0;j < 9;j++) {
-				ctx.moveTo(64 * j, 0);
-				ctx.lineTo(64 * j, 64 * 9);
-
-				ctx.moveTo(0, 64 * j);
-				ctx.lineTo(64 * 9, 64 * j);
-			}
-			ctx.stroke();
-
-			// draw grid thick lines
-			ctx.lineWidth = 4.0;
-			ctx.strokeStyle = '#000';
-			ctx.beginPath();
-			for (j = 0;j < 9;j++) {
-				if (j > 0 && j%3 === 0) {
-					ctx.moveTo(64 * j, 0);
-					ctx.lineTo(64 * j, 64 * 9);
-
-					ctx.moveTo(0, 64 * j);
-					ctx.lineTo(64 * 9, 64 * j);
-				}
-			}
-			ctx.stroke();
-
-			// draw grid borders
-			ctx.lineWidth = 2.0;
-			ctx.strokeStyle = '#000';
-			ctx.strokeRect(1, 1, 9 * 64, 9 * 64);
-
-			return result;
-		}
-
-		function renderBoard(ctx) {
-			var x, y;
-
-			// draw grid squares
-			for (y = 0;y < 9;y++) {
-				for (x = 0;x < 9;x++) {
-					if (showErrors && grid[y*9+x].error) {
-						ctx.fillStyle = '#f00';
-					} else if (grid[y*9+x].editable) {
-						ctx.fillStyle = '#fff';
-					} else {
-						ctx.fillStyle = 'rgba(255, 255, 255, 0)';
-					}
-
-					ctx.fillRect(64 * x, 64 * y, 64, 64);
-				}
-			}
-
-			// draw grid outline
-			ctx.drawImage(gridLines, 0, 0);
-		}
-
-		function render(ctx) {
-			var val;
-			ctx.clearRect(0, 0, width, height);
-
-			renderBoard(ctx);
-
-			// draw numbers
-			for (y = 0;y < 9;y++) {
-				for (x = 0;x < 9;x++) {
-					val = grid[y * 9 + x].value;
-					if (val > 0) {
-						ctx.drawImage(images[val], x * 64, y * 64);
-					}
-				}
-			}
-
-			if (mouse.x >= 0 && mouse.y >= 0) {
-				ctx.drawImage(images[mouse.state], mouse.x - 32, mouse.y - 32);
-			}
-		}
+		};
 
 		return ({
 			captureKey: function (code) {
@@ -296,7 +299,7 @@
 			},
 
 			mouseWheel: function (delta) {
-				mouse.changeState(mouse.state + (delta < 0 && 1 || delta > 0 && -1 || 0));
+				mouse.changeState(mouse.state + ((delta < 0 && 1) || (delta > 0 && -1) || 0));
 			},
 
 			mouseMove: function (x, y) {
@@ -304,7 +307,7 @@
 				mouse.y = y;
 			},
 
-			mouseOut: function (x, y) {
+			mouseOut: function () {
 				mouse.x = -1;
 				mouse.y = -1;
 			},
@@ -331,14 +334,14 @@
 					return ({
 						error: false,
 						editable: cell.editable,
-						value: !cell.editable && cell.value || 0
+						value: (!cell.editable && cell.value) || 0
 					});
 				});
 			},
 
 			toggleErrors: function () {
 				showErrors = !showErrors;
-				this.innerHTML = (showErrors && 'Hide' || 'Show') + ' Errors';
+				this.innerHTML = ((showErrors && 'Hide') || 'Show') + ' Errors';
 			},
 
 			showSolution: function () {
@@ -358,9 +361,9 @@
 		count = 0;
 		images = {};
 		files = createArray(10, function (x) { return x; });
-		
+
 		files.forEach(function (file) {
-			var image = new Image();
+			var image = new window.Image();
 
 			image.onload = function () {
 				images[file] = image;
