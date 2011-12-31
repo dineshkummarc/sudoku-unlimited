@@ -20,6 +20,8 @@
 		canvas.addEventListener('keydown', function (e) {
 			if (game.captureKey(e.keyCode)) {
 				game.keyPressed(e.keyCode);
+				repaint(update);
+
 				e.preventDefault();
 				return false;
 			}
@@ -27,6 +29,8 @@
 		canvas.addEventListener('keyup', function (e) {
 			if (game.captureKey(e.keyCode)) {
 				game.keyReleased(e.keyCode);
+				repaint(update);
+
 				e.preventDefault();
 				return false;
 			}
@@ -35,6 +39,8 @@
 		['DOMMouseScroll', 'mousewheel'].forEach(function (event) {
 			canvas.addEventListener(event, function (e) {
 				game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
+				repaint(update);
+
 				e.preventDefault();
 				return false;
 			}, false);
@@ -52,6 +58,7 @@
 				}
 
 				game[event].apply(game, [x, y, e]);
+				repaint(update);
 			}, false);
 		});
 
@@ -65,6 +72,8 @@
 			var target = e.target;
 			if (/button/i.test(target.tagName) && target.id && typeof game[target.id] === 'function') {
 				game[target.id].apply(game, [e]);
+				repaint(update);
+
 				e.preventDefault();
 				return false;
 			}
@@ -92,12 +101,10 @@
 	context = initCanvas(document.getElementById('game'), width, height);
 
 	function update(time, force) {
-		repaint(update);
 		var delta = time - lastUpdate;
 		if (delta >= 16 || force) { // Cap at 60 FPS
 			lastUpdate = time;
 
-			game.update(delta);
 			game.render(context);
 		}
 	}
@@ -126,6 +133,7 @@
 						value: cell
 					});
 				});
+				repaint(update);
 
 				generator.overlay.style.opacity = 0;
 				window.setTimeout(function () {
@@ -147,9 +155,6 @@
 					value: 0
 				});
 			});
-		}
-
-		function update(delta) {
 		}
 
 		function createGridLines() {
@@ -271,7 +276,6 @@
 				}
 			},
 			init: init,
-			update: update,
 			render: render
 
 		});
