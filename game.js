@@ -26,15 +26,6 @@
 				return false;
 			}
 		}, false);
-		canvas.addEventListener('keyup', function (e) {
-			if (game.captureKey(e.keyCode)) {
-				game.keyReleased(e.keyCode);
-				repaint(update);
-
-				e.preventDefault();
-				return false;
-			}
-		}, false);
 
 		['DOMMouseScroll', 'mousewheel'].forEach(function (event) {
 			canvas.addEventListener(event, function (e) {
@@ -116,7 +107,22 @@
 	}
 
 	game = (function () {
-		var grid, gridSource, gridLines, showErrors, generator, mouse;
+		var grid, gridSource, gridLines, showErrors, generator, mouse, keyMap;
+
+		keyMap = {
+			46: 0, 48: 0, 96: 0,
+			49: 1, 97: 1,
+			50: 2, 98: 2,
+			51: 3, 99: 3,
+			52: 4, 100: 4,
+			53: 5, 101: 5,
+			54: 6, 102: 6,
+			55: 7, 103: 7,
+			56: 8, 104: 8,
+			57: 9, 105: 9,
+			38: 'up',
+			40: 'down'
+		};
 
 		generator = new Worker('generator.js');
 		generator.overlay = document.getElementById('overlay');
@@ -146,7 +152,14 @@
 		function init(ctx) {
 			showErrors = false;
 			gridLines = createGridLines();
-			mouse = { x: -1, y : -1 };
+
+			mouse = { x: -1, y : -1, state: 0 };
+			mouse.changeState = function (delta) {
+				mouse.state = delta % 10;
+				if (mouse.state < 0) {
+					mouse.state += 10;
+				}
+			};
 
 			grid = createArray(9 * 9, function () {
 				return ({
@@ -240,21 +253,27 @@
 			renderBoard(ctx);
 
 			if (mouse.x >= 0 && mouse.y >= 0) {
-				ctx.drawImage(images[0], mouse.x - 32, mouse.y - 32);
+				ctx.drawImage(images[mouse.state], mouse.x - 32, mouse.y - 32);
 			}
 		}
 
 		return ({
 			captureKey: function (code) {
-				return true;
+				return typeof keyMap[code] !== 'undefined';
 			},
 
-			keyPressed: function (code) {},
-
-			keyReleased: function (code) {},
+			keyPressed: function (code) {
+				if (typeof keyMap[code] === 'number') {
+					mouse.changeState(keyMap[code]);
+				} else if (keyMap[code] === 'up') {
+					mouse.changeState(mouse.state + 1);
+				} else if (keyMap[code] === 'down') {
+					mouse.changeState(mouse.state - 1);
+				}
+			},
 
 			mouseWheel: function (delta) {
-				console.log(delta);
+				mouse.changeState(mouse.state + (delta < 0 && 1 || delta > 0 && -1 || 0));
 			},
 
 			mouseMove: function (x, y) {
