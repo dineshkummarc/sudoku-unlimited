@@ -65,6 +65,7 @@
 				game[target.id].apply(target, [e]);
 				repaint(update);
 
+				context.canvas.focus();
 				e.preventDefault();
 				return false;
 			}
@@ -150,6 +151,7 @@
 				window.setTimeout(function () {
 					generator.overlay.style.display = 'none';
 					generator.running = false;
+					context.canvas.focus();
 				}, 250);
 			}
 		}, false);
