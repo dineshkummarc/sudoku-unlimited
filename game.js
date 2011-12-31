@@ -324,6 +324,12 @@
 					generator.postMessage('createGrid');
 				}
 			},
+
+			showSolution: function () {
+				if (gridSource && gridSource.length) {
+					grid = gridSource;
+				}
+			},
 			init: init,
 			render: render
 
