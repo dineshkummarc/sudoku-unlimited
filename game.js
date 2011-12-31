@@ -37,7 +37,7 @@
 			}, false);
 		});
 
-		['mouseMove', 'mouseOut'].forEach(function (event) {
+		['mouseMove', 'mouseOut', 'mouseDown'].forEach(function (event) {
 			canvas.addEventListener(event.toLowerCase(), function (e) {
 				var x, y;
 				x = e.offsetX;
@@ -268,19 +268,17 @@
 			var val;
 			ctx.clearRect(0, 0, width, height);
 
+			renderBoard(ctx);
+
 			// draw numbers
-			if (grid != null) {
-				for (y = 0;y < 9;y++) {
-					for (x = 0;x < 9;x++) {
-						val = grid[y * 9 + x].value;
-						if (val > 0) {
-							ctx.drawImage(images[val], x * 64, y * 64);
-						}
+			for (y = 0;y < 9;y++) {
+				for (x = 0;x < 9;x++) {
+					val = grid[y * 9 + x].value;
+					if (val > 0) {
+						ctx.drawImage(images[val], x * 64, y * 64);
 					}
 				}
 			}
-
-			renderBoard(ctx);
 
 			if (mouse.x >= 0 && mouse.y >= 0) {
 				ctx.drawImage(images[mouse.state], mouse.x - 32, mouse.y - 32);
@@ -314,6 +312,14 @@
 			mouseOut: function (x, y) {
 				mouse.x = -1;
 				mouse.y = -1;
+			},
+
+			mouseDown: function (x, y) {
+				var cell = Math.floor(y / 64) * 9 + Math.floor(x / 64);
+				console.log(cell, grid[cell]);
+				if (grid[cell] && grid[cell].editable) {
+					grid[cell].value = mouse.state;
+				}
 			},
 
 			newPuzzle: function () {
