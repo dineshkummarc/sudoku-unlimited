@@ -316,7 +316,6 @@
 
 			mouseDown: function (x, y) {
 				var cell = Math.floor(y / 64) * 9 + Math.floor(x / 64);
-				console.log(cell, grid[cell]);
 				if (grid[cell] && grid[cell].editable) {
 					grid[cell].value = mouse.state;
 				}
@@ -329,6 +328,16 @@
 					generator.running = true;
 					generator.postMessage('createGrid');
 				}
+			},
+
+			restartPuzzle: function () {
+				grid = grid.map(function (cell) {
+					return ({
+						error: false,
+						editable: cell.editable,
+						value: !cell.editable && cell.value || 0
+					});
+				});
 			},
 
 			showSolution: function () {
