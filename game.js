@@ -240,7 +240,7 @@
 			renderBoard(ctx);
 
 			if (mouse.x >= 0 && mouse.y >= 0) {
-				ctx.drawImage(images.x, mouse.x - 32, mouse.y - 32);
+				ctx.drawImage(images[0], mouse.x - 32, mouse.y - 32);
 			}
 		}
 
@@ -286,7 +286,7 @@
 		var files, count;
 		count = 0;
 		images = {};
-		files = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'x', 'youwin'];
+		files = createArray(10, function (x) { return x; });
 		
 		files.forEach(function (file) {
 			var image = new Image();
