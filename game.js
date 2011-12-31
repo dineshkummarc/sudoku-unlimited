@@ -84,6 +84,9 @@
 		return result;
 	}
 
+	function rand(min, max) {
+		return min + Math.floor(Math.random() * (max - min));
+	}
 
 	initUI();
 	width = 578;
@@ -132,13 +135,15 @@
 			var data = event.data;
 			generator.progressBar.style.width = data.progress * 100 + '%';
 			if (data.complete) {
-				grid = gridSource = data.grid.map(function (cell) {
+				gridSource = data.grid.map(function (cell) {
 					return ({
 						error: false,
 						editable: false,
 						value: cell
 					});
 				});
+				grid = randomizeGrid(gridSource);
+
 				repaint(update);
 
 				generator.overlay.style.opacity = 0;
@@ -168,6 +173,31 @@
 					value: 0
 				});
 			});
+		}
+
+		function copyGrid(grid) {
+			return grid.map(function (cell) {
+				return ({
+					error: cell.error,
+					editable: cell.editable,
+					value: cell.value
+				});
+			});
+		}
+
+		function randomizeGrid(grid) {
+			var result = copyGrid(grid);
+			var j,n,r = rand(30,50);
+			for (j = 0;j < r;j++) {
+				do {
+					n = rand(0,result.length-1);
+				}
+				while (result[n].editable);
+				result[n].value = 0;
+				result[n].editable = true;
+			}
+
+			return result;
 		}
 
 		function createGridLines() {
