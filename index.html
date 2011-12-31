@@ -2,28 +2,19 @@
 <html>
 <head>
 <title>Sudoku Unlimited</title>
-<style type="text/css">
-#container {
-	width: 800px;
-	height: 600px;
-	display: block;
-	margin: 0 auto;
-	background-color: #b6d3f7;
-	background-image: -webkit-linear-gradient(315deg, #fff, #b6d3f7 10%, #b6d3f7 70%, #fff);
-	background-image: -moz-linear-gradient(315deg, #fff, #b6d3f7 10%, #b6d3f7 70%, #fff);
-	background-image: -o-linear-gradient(315deg, #fff, #b6d3f7 10%, #b6d3f7 70%, #fff);
-}
-canvas {
-	margin: 10px;
-	cursor: none;
-	outline: 0;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="style.css"></link>
 </head>
 <body>
-<div id="container">
-<canvas id="game"></canvas>
-</div>
-<script type="text/javascript" src="game.js"></script>
+	<div id="container">
+		<canvas id="game"></canvas>
+		<div id="menu">
+			<img src="images/logo.png"/>
+			<button id="newpuzzle">New Puzzle</button>
+			<button id="restart">Restart</button>
+			<button id="toggleerrors">Show Errors</button>
+			<button id="showsolution">Show Solution</button>
+		</div>
+	</div>
+	<script type="text/javascript" src="game.js"></script>
 </body>
 </html>

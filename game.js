@@ -196,12 +196,7 @@
 		var files, count;
 		count = 0;
 		images = {};
-		files = [
-			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-			'about', 'button_over', 'button', 'exit', 'generating',
-			'hide_errors', 'hide', 'logo', 'new_puzzle', 'restart',
-			'show_errors', 'show_solution', 'x', 'youwin'
-		];
+		files = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'x', 'youwin'];
 		
 		files.forEach(function (file) {
 			var image = new Image();
