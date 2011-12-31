@@ -30,6 +30,7 @@
 	background-image: url(images/button.png);
 	text-align: center;
 	font: bold 14px helvetica, sans, serif;
+	color: #000;
 }
 #menu button:hover {
 	background-image: url(images/button_over.png);

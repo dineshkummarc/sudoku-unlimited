@@ -1,5 +1,5 @@
 (function (window, document) {
-	var generator, game, images, lastUpdate, context, width, height;
+	var game, images, lastUpdate, context, width, height;
 
 	repaint = window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
@@ -43,6 +43,17 @@
 		return canvas.getContext('2d');
 	}
 
+	/* Set up listeners on buttons */
+	function initUI() {
+		var menu = document.getElementById('menu');
+		menu.addEventListener('click', function (e) {
+			var target = e.target;
+			if (/button/i.test(target.tagName) && target.id && typeof game[target.id] === 'function') {
+				game[target.id].apply(game, [e]);
+			}
+		});
+	}
+
 	function createArray(length, map) {
 		var result = [], j;
 		for (j = 0; j < length; j += 1) {
@@ -56,18 +67,11 @@
 		return result;
 	}
 
-	var generator = new Worker('generator.js');
-	generator.addEventListener('message', function (event) {
-		var data = event.data;
-		console.log(data);
 
-		if (data.complete) {
-			console.log(data.grid.join('').match(/\d{9}/g).join('\n'));
-		}
-	}, false);
-
+	initUI();
 	width = 578;
 	height = 578;
+
 	context = initCanvas(document.getElementById('game'), width, height);
 
 	function update(time, force) {
@@ -88,8 +92,23 @@
 	}
 
 	game = (function () {
-		var grid, gridLines, showErrors;
+		var grid, gridSource, gridLines, showErrors, generator;
 
+		generator = new Worker('generator.js');
+		generator.running = false;
+		generator.addEventListener('message', function (event) {
+			var data = event.data;
+			if (data.complete) {
+				generator.running = false;
+				grid = gridSource = data.grid.map(function (cell) {
+					return ({
+						error: false,
+						editable: false,
+						value: cell
+					});
+				});
+			}
+		}, false);
 
 		function init(ctx) {
 			showErrors = false;
@@ -172,6 +191,21 @@
 		}
 
 		function render(ctx) {
+			var val;
+
+			// draw numbers
+			if (grid != null) {
+				for (y = 0;y < 9;y++) {
+					for (x = 0;x < 9;x++) {
+						val = grid[y * 9 + x].value;
+						if (val > 0) {
+							ctx.clearRect(x * 64, y * 64, 64, 64);
+							ctx.drawImage(images[val], x * 64, y * 64);
+						}
+					}
+				}
+			}
+
 			renderBoard(ctx);
 		}
 
@@ -183,6 +217,12 @@
 			keyReleased: function (code) {},
 			mouseWheel: function (delta) {
 				console.log(delta);
+			},
+			newPuzzle: function () {
+				if (!generator.running) {
+					generator.running = true;
+					generator.postMessage('createGrid');
+				}
 			},
 			init: init,
 			update: update,
@@ -202,7 +242,6 @@
 			var image = new Image();
 
 			image.onload = function () {
-				console.log(image.src + ' loaded');
 				images[file] = image;
 
 				count += 1;
