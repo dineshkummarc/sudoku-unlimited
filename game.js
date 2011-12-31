@@ -37,7 +37,22 @@
 				game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
 				e.preventDefault();
 				return false;
-			});
+			}, false);
+		});
+
+		['mouseMove', 'mouseOut'].forEach(function (event) {
+			canvas.addEventListener(event.toLowerCase(), function (e) {
+				var x, y;
+				x = e.offsetX;
+				y = e.offsetY;
+
+				if (typeof x === 'undefined' || typeof y === 'undefined') {
+					x = e.pageX - canvas.offsetLeft;
+					y = e.pageY - canvas.offsetTop;
+				}
+
+				game[event].apply(game, [x, y, e]);
+			}, false);
 		});
 
 		return canvas.getContext('2d');
@@ -94,7 +109,7 @@
 	}
 
 	game = (function () {
-		var grid, gridSource, gridLines, showErrors, generator;
+		var grid, gridSource, gridLines, showErrors, generator, mouse;
 
 		generator = new Worker('generator.js');
 		generator.overlay = document.getElementById('overlay');
@@ -123,6 +138,7 @@
 		function init(ctx) {
 			showErrors = false;
 			gridLines = createGridLines();
+			mouse = { x: -1, y : -1 };
 
 			grid = createArray(9 * 9, function () {
 				return ({
@@ -217,17 +233,35 @@
 			}
 
 			renderBoard(ctx);
+
+			if (mouse.x >= 0 && mouse.y >= 0) {
+				ctx.drawImage(images.x, mouse.x - 32, mouse.y - 32);
+			}
 		}
 
 		return ({
 			captureKey: function (code) {
 				return true;
 			},
+
 			keyPressed: function (code) {},
+
 			keyReleased: function (code) {},
+
 			mouseWheel: function (delta) {
 				console.log(delta);
 			},
+
+			mouseMove: function (x, y) {
+				mouse.x = x;
+				mouse.y = y;
+			},
+
+			mouseOut: function (x, y) {
+				mouse.x = -1;
+				mouse.y = -1;
+			},
+
 			newPuzzle: function () {
 				if (!generator.running) {
 					generator.overlay.style.display = 'block';
