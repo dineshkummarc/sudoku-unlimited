@@ -1,16 +1,6 @@
 (function (window, document) {
 	var game, images, lastUpdate, overlay, progressBar, context, width, height;
 
-	repaint = window.requestAnimationFrame ||
-		window.webkitRequestAnimationFrame ||
-		window.mozRequestAnimationFrame ||
-		window.oRequestAnimationFrame ||
-		function (callback) {
-			window.setTimeout(function () {
-				callback(Date.now());
-			}, 20);
-		};
-
 	function initCanvas(canvas, width, height) {
 		canvas.width = width;
 		canvas.height = height;
@@ -20,7 +10,7 @@
 		canvas.addEventListener('keydown', function (e) {
 			if (game.captureKey(e.keyCode)) {
 				game.keyPressed(e.keyCode);
-				repaint(update);
+				update();
 
 				e.preventDefault();
 				return false;
@@ -30,7 +20,7 @@
 		['DOMMouseScroll', 'mousewheel'].forEach(function (event) {
 			canvas.addEventListener(event, function (e) {
 				game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
-				repaint(update);
+				update();
 
 				e.preventDefault();
 				return false;
@@ -49,7 +39,7 @@
 				}
 
 				game[event].apply(game, [x, y, e]);
-				repaint(update);
+				update();
 			}, false);
 		});
 
@@ -63,7 +53,7 @@
 			var target = e.target;
 			if (/button/i.test(target.tagName) && target.id && typeof game[target.id] === 'function') {
 				game[target.id].apply(target, [e]);
-				repaint(update);
+				update();
 
 				context.canvas.focus();
 				e.preventDefault();
@@ -97,9 +87,10 @@
 
 	context = initCanvas(document.getElementById('game'), width, height);
 
-	function update(time, force) {
-		var delta = time - lastUpdate;
-		if (delta >= 16 || force) { // Cap at 60 FPS
+	function update() {
+		var delta, time = Date.now();
+		delta = time - lastUpdate;
+		if (delta >= 16) { // Cap at 60 FPS
 			lastUpdate = time;
 
 			game.render(context);
@@ -145,7 +136,7 @@
 				});
 				grid = randomizeGrid(gridSource);
 
-				repaint(update);
+				update();
 
 				overlay.style.opacity = 0;
 				window.setTimeout(function () {
