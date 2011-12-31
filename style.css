@@ -16,17 +16,18 @@
 	position: relative;
 	top: 0px;
 	background: rgba(255, 255, 255, .7);
-	display: none;
-	opacity: 0;
+	display: block;
+	opacity: 1;
 	-webkit-transition: opacity .25s linear;
 	-moz-transition: opacity .25s linear;
 	-o-transition: opacity .25s linear;
 }
 
-#overlay img.generating {
+#generating {
 	position: absolute;
 	left: 185px;
 	top: 245px;
+	display: none;
 }
 
 #overlay .progress {

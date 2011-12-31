@@ -1,5 +1,5 @@
 (function (window, document) {
-	var game, images, lastUpdate, context, width, height;
+	var game, images, lastUpdate, overlay, progressBar, context, width, height;
 
 	repaint = window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
@@ -89,6 +89,8 @@
 		return min + Math.floor(Math.random() * (max - min));
 	}
 
+	overlay = document.getElementById('overlay');
+	progressBar = document.getElementById('progressBar');
 	initUI();
 	width = 578;
 	height = 578;
@@ -129,12 +131,10 @@
 		};
 
 		generator = new Worker('generator.js');
-		generator.overlay = document.getElementById('overlay');
-		generator.progressBar = document.getElementById('progressBar');
 		generator.running = false;
 		generator.addEventListener('message', function (event) {
 			var data = event.data;
-			generator.progressBar.style.width = data.progress * 100 + '%';
+			progressBar.style.width = data.progress * 100 + '%';
 			if (data.complete) {
 				gridSource = data.grid.map(function (cell) {
 					return ({
@@ -147,9 +147,9 @@
 
 				repaint(update);
 
-				generator.overlay.style.opacity = 0;
+				overlay.style.opacity = 0;
 				window.setTimeout(function () {
-					generator.overlay.style.display = 'none';
+					overlay.style.display = 'none';
 					generator.running = false;
 					context.canvas.focus();
 				}, 250);
@@ -175,6 +175,8 @@
 					value: 0
 				});
 			});
+
+			render(ctx);
 		}
 
 		function copyGrid(grid) {
@@ -326,8 +328,8 @@
 
 			newPuzzle: function () {
 				if (!generator.running) {
-					generator.overlay.style.display = 'block';
-					generator.overlay.style.opacity = 1;
+					overlay.style.display = 'block';
+					overlay.style.opacity = 1;
 					generator.running = true;
 					generator.postMessage('createGrid');
 				}
@@ -373,8 +375,16 @@
 				images[file] = image;
 
 				count += 1;
+				progressBar.style.width = (count / files.length) * 100 + '%';
+
 				if (count === files.length) {
+					overlay.style.opacity = 0;
 					callback();
+					window.setTimeout(function () {
+						overlay.style.display = 'none';
+						document.getElementById('generating').style.display = 'block';
+						context.canvas.focus();
+					}, 250);
 				}
 			};
 
