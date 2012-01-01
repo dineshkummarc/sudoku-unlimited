@@ -22,6 +22,9 @@
 				game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
 				update();
 
+				/* Force re-render since scroll updates can be faster than 16ms */
+				game.render(context); 
+
 				e.preventDefault();
 				return false;
 			}, false);
