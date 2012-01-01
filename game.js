@@ -1,5 +1,5 @@
 (function (window, document) {
-	var game, images, lastUpdate, overlay, progressBar, update, context, width, height;
+	var game, images, overlay, progressBar, update, context, width, height;
 
 	function initCanvas(canvas, width, height) {
 		canvas.width = width;
@@ -21,9 +21,6 @@
 			canvas.addEventListener(event, function (e) {
 				game.mouseWheel(e.detail || e.wheelDelta * -1 || 0);
 				update();
-
-				/* Force re-render since scroll updates can be faster than 16ms */
-				game.render(context); 
 
 				e.preventDefault();
 				return false;
@@ -91,19 +88,12 @@
 	context = initCanvas(document.getElementById('game'), width, height);
 
 	update = function () {
-		var delta, time = Date.now();
-		delta = time - lastUpdate;
-		if (delta >= 16) { // Cap at 60 FPS
-			lastUpdate = time;
-
-			game.render(context);
-		}
+		game.render(context);
 	};
 
 	function init() {
 		game.init(context);
-		lastUpdate = Date.now();
-		update(lastUpdate);
+		update();
 	}
 
 	game = (function () {
